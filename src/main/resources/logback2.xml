@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration  scan="true" scanPeriod="60 seconds" debug="false">
+    <!--
+     1. scan：程序运行时配置文件被修改，是否重新加载。true=重新加载；false=不重新加载；默认为true;
+     2. scanPeriod：监测配置文件被修改的时间间隔，scan属性必须设置为true才可生效；默认为1分钟，默认单位是毫秒；
+     3. debug：是否打印logback程序运行的日志信息。true=打印；false=不打印；默认为false;
+    -->
+    <contextName>logback</contextName>
+    <!-- 路径变量 -->
+    <property name="log.path" value="E:\\test\\logback.log" />
+    <!-- 日志格式变量 -->
+    <property name="logPattern" value="%d{HH:mm:ss.SSS} %contextName [%thread] %-5level %logger{36}  %file:%line - %msg%n" />
+    <!--
+    1. %d{HH:mm:ss.SSS} 显示的时间
+    2. [%thread]打印线程号，log4j2使用%t]也可以
+    3. %-5level日志级别，并且使用5个字符靠左对齐
+    4. %logger{36}——日志输出者的名字,即类的类名
+    5. %file	打印类名，也可用%class，打印的全限定类名
+    6. %line	打印日志所在代码行数
+    7. %msg——日志消息
+    8. %n——平台的换行符-->
+    <!--输出到控制台-->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+             <level>ERROR</level>
+         </filter>-->
+        <encoder>
+            <pattern>${logPattern}</pattern>
+        </encoder>
+    </appender>
+
+    <!--输出到文件-->
+    <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.path}</file>
+        <!--输出到文件路径一种滚动策略：根据时间制定日志文件的滚动策略，如：按天、按小时、按分钟生成日志文件 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 文件路径,定义了日志的切分方式——把每一天的日志归档到一个文件中,以防止日志填满整个磁盘空间 -->
+            <fileNamePattern>${log.path}/%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <!-- 日志在磁盘上保留天数 -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <!-- 另一种滚动策略:表示根据日志文件大小，超过制定大小会触发日志滚动； -->
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>5MB</maxFileSize>
+        </triggeringPolicy>
+        <encoder>
+            <pattern>${logPattern}</pattern>
+            <!--
+            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                 <level>ERROR</level>
+            </filter>
+            ThresholdFilter为系统定义的拦截器，例如我们用ThresholdFilter来过滤掉ERROR级别以下的日志不输出到文件中。如果不用记得注释掉，不然你控制台会发现没日志~
+             -->
+            <!-- 设置字符集 -->
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+    <!-- 把日志异步输出到磁盘文件中，避免每次都进行磁盘IO操作 -->
+    <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>0</discardingThreshold>
+        <queueSize>10000</queueSize>
+        <appender-ref ref="file" />
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="console" />
+        <appender-ref ref="ASYNC" />
+    </root>
+
+    <!-- logback为java中的包 -->
+    <logger name="com.dudu.controller"/>
+    <!--logback.LogbackDemo：类的全路径 -->
+    <logger name="com.dudu.controller.LearnController" level="WARN" additivity="false">
+        <appender-ref ref="console"/>
+    </logger>
+</configuration>
